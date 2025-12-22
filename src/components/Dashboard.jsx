@@ -2,15 +2,14 @@ import React, { useState, useEffect } from 'react';
 
 export default function Dashboard({ token, apiUrl }) {
   const [stats, setStats] = useState({ technicians: 0, workOrders: 0, materials: 0, clients: 0 });
-  const [recentOrders, setRecentOrders] = useState([]);
   const [orders, setOrders] = useState([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   useEffect(() => {
-    fetchStats();
+    fetchData();
   }, []);
 
-  const fetchStats = async () => {
+  const fetchData = async () => {
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
       const [techRes, ordersRes, matRes, clientsRes] = await Promise.all([
@@ -31,7 +30,6 @@ export default function Dashboard({ token, apiUrl }) {
         materials: mats.length,
         clients: clients.length
       });
-      setRecentOrders(ordersData.slice(0, 5));
       setOrders(ordersData);
     } catch (err) {
       console.error('Error:', err);
@@ -45,10 +43,8 @@ export default function Dashboard({ token, apiUrl }) {
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
-
     const days = [];
     
-    // Previous month days
     const prevMonthDays = new Date(year, month, 0).getDate();
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
       days.push({
@@ -58,7 +54,6 @@ export default function Dashboard({ token, apiUrl }) {
       });
     }
 
-    // Current month days
     for (let day = 1; day <= daysInMonth; day++) {
       days.push({
         day,
@@ -67,7 +62,6 @@ export default function Dashboard({ token, apiUrl }) {
       });
     }
 
-    // Next month days
     const remainingDays = 42 - days.length;
     for (let day = 1; day <= remainingDays; day++) {
       days.push({
@@ -94,99 +88,94 @@ export default function Dashboard({ token, apiUrl }) {
 
   const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
                       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-
-  const statusColor = (status) => {
-    switch(status) {
-      case 'completed': return 'bg-green-500';
-      case 'in_progress': return 'bg-blue-500';
-      case 'cancelled': return 'bg-gray-400';
-      default: return 'bg-red-500';
-    }
-  };
+  const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
   return (
-    <div>
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">Dashboard</h2>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-red-500 to-red-600 text-white rounded-xl shadow-lg p-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-red-600">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-red-100 text-sm font-medium">Técnicos Activos</p>
-              <p className="text-4xl font-bold mt-2">{stats.technicians}</p>
+              <p className="text-gray-600 text-sm">Técnicos</p>
+              <p className="text-3xl font-bold text-red-600">{stats.technicians}</p>
             </div>
-            <div className="text-5xl opacity-80">👷</div>
+            <div className="text-4xl">👷</div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl shadow-lg p-6">
+        <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-blue-600">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-blue-100 text-sm font-medium">Órdenes de Trabajo</p>
-              <p className="text-4xl font-bold mt-2">{stats.workOrders}</p>
+              <p className="text-gray-600 text-sm">Órdenes</p>
+              <p className="text-3xl font-bold text-blue-600">{stats.workOrders}</p>
             </div>
-            <div className="text-5xl opacity-80">📋</div>
+            <div className="text-4xl">📋</div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl shadow-lg p-6">
+        <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-purple-600">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-100 text-sm font-medium">Materiales</p>
-              <p className="text-4xl font-bold mt-2">{stats.materials}</p>
+              <p className="text-gray-600 text-sm">Materiales</p>
+              <p className="text-3xl font-bold text-purple-600">{stats.materials}</p>
             </div>
-            <div className="text-5xl opacity-80">📦</div>
+            <div className="text-4xl">📦</div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl shadow-lg p-6">
+        <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-orange-600">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-orange-100 text-sm font-medium">Clientes</p>
-              <p className="text-4xl font-bold mt-2">{stats.clients}</p>
+              <p className="text-gray-600 text-sm">Clientes</p>
+              <p className="text-3xl font-bold text-orange-600">{stats.clients}</p>
             </div>
-            <div className="text-5xl opacity-80">👥</div>
+            <div className="text-4xl">👥</div>
           </div>
         </div>
       </div>
 
       {/* Calendar */}
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-bold text-gray-800">
+      <div className="bg-white rounded-lg shadow-lg p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-bold text-gray-800">
             {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
           </h3>
-          <div className="flex space-x-2">
+          <div className="flex gap-2">
             <button
               onClick={() => changeMonth(-1)}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition"
+              className="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded text-sm"
             >
-              ← Anterior
+              ←
             </button>
             <button
               onClick={() => setCurrentMonth(new Date())}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition"
+              className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
             >
               Hoy
             </button>
             <button
               onClick={() => changeMonth(1)}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition"
+              className="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded text-sm"
             >
-              Siguiente →
+              →
             </button>
           </div>
         </div>
 
-        {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-2">
-          {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
-            <div key={day} className="text-center font-semibold text-gray-700 py-2 bg-gray-100 rounded-lg">
+        {/* Days Header */}
+        <div className="grid grid-cols-7 gap-1 mb-2">
+          {dayNames.map(day => (
+            <div key={day} className="text-center font-semibold text-gray-700 text-sm py-2 bg-gray-100 rounded">
               {day}
             </div>
           ))}
+        </div>
 
+        {/* Calendar Grid */}
+        <div className="grid grid-cols-7 gap-1">
           {days.map((dayObj, idx) => {
             const dayOrders = getOrdersForDate(dayObj.date);
             const isToday = dayObj.date.toISOString().split('T')[0] === today;
@@ -194,29 +183,33 @@ export default function Dashboard({ token, apiUrl }) {
             return (
               <div
                 key={idx}
-                className={`min-h-[100px] border rounded-lg p-2 ${
-                  !dayObj.isCurrentMonth ? 'bg-gray-50 opacity-50' : 'bg-white'
-                } ${isToday ? 'ring-2 ring-red-500 bg-red-50' : ''} hover:shadow-md transition`}
+                className={`min-h-[80px] border rounded p-1 ${
+                  !dayObj.isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'
+                } ${isToday ? 'ring-2 ring-red-500 bg-red-50' : ''}`}
               >
-                <div className={`text-sm font-semibold mb-1 ${
-                  isToday ? 'text-red-600' : dayObj.isCurrentMonth ? 'text-gray-800' : 'text-gray-400'
+                <div className={`text-xs font-semibold mb-1 ${
+                  isToday ? 'text-red-600' : ''
                 }`}>
                   {dayObj.day}
                 </div>
 
-                <div className="space-y-1">
-                  {dayOrders.slice(0, 3).map(order => (
-                    <div
-                      key={order.id}
-                      className={`${statusColor(order.status)} text-white text-xs px-2 py-1 rounded truncate`}
-                      title={`${order.title} - ${order.technician_name || 'Sin asignar'}`}
-                    >
-                      {order.scheduled_time || '—'} {order.title.substring(0, 15)}
-                    </div>
-                  ))}
-                  {dayOrders.length > 3 && (
-                    <div className="text-xs text-gray-500 text-center">
-                      +{dayOrders.length - 3} más
+                <div className="space-y-0.5">
+                  {dayOrders.slice(0, 2).map(order => {
+                    const color = order.status === 'completed' ? 'bg-green-500' :
+                                 order.status === 'in_progress' ? 'bg-blue-500' : 'bg-red-500';
+                    return (
+                      <div
+                        key={order.id}
+                        className={`${color} text-white text-[10px] px-1 py-0.5 rounded truncate`}
+                        title={order.title}
+                      >
+                        {order.scheduled_time?.substring(0,5)} {order.title.substring(0,10)}
+                      </div>
+                    );
+                  })}
+                  {dayOrders.length > 2 && (
+                    <div className="text-[10px] text-gray-500 text-center">
+                      +{dayOrders.length - 2}
                     </div>
                   )}
                 </div>
@@ -226,64 +219,19 @@ export default function Dashboard({ token, apiUrl }) {
         </div>
 
         {/* Legend */}
-        <div className="flex flex-wrap gap-4 mt-6 justify-center">
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-red-500 rounded"></div>
-            <span className="text-sm text-gray-700">Pendiente</span>
+        <div className="flex flex-wrap gap-3 mt-4 text-xs">
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 bg-red-500 rounded"></div>
+            <span>Pendiente</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-blue-500 rounded"></div>
-            <span className="text-sm text-gray-700">En Progreso</span>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 bg-blue-500 rounded"></div>
+            <span>En Progreso</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-green-500 rounded"></div>
-            <span className="text-sm text-gray-700">Completada</span>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 bg-green-500 rounded"></div>
+            <span>Completada</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-gray-400 rounded"></div>
-            <span className="text-sm text-gray-700">Cancelada</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Orders */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">Órdenes Recientes</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b-2 border-gray-200">
-                <th className="text-left py-3 px-4 text-gray-700">ID</th>
-                <th className="text-left py-3 px-4 text-gray-700">Título</th>
-                <th className="text-left py-3 px-4 text-gray-700">Cliente</th>
-                <th className="text-left py-3 px-4 text-gray-700">Técnico</th>
-                <th className="text-left py-3 px-4 text-gray-700">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentOrders.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="text-center py-8 text-gray-500">
-                    No hay órdenes recientes
-                  </td>
-                </tr>
-              ) : (
-                recentOrders.map(order => (
-                  <tr key={order.id} className="border-b hover:bg-gray-50 transition">
-                    <td className="py-3 px-4 font-medium">#{order.id}</td>
-                    <td className="py-3 px-4">{order.title}</td>
-                    <td className="py-3 px-4">{order.client_name || 'N/A'}</td>
-                    <td className="py-3 px-4">{order.technician_name || 'Sin asignar'}</td>
-                    <td className="py-3 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium text-white ${statusColor(order.status)}`}>
-                        {order.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
         </div>
       </div>
     </div>
