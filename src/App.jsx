@@ -14,6 +14,31 @@ function App() {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || 'null'));
   const [currentView, setCurrentView] = useState('dashboard');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [backendStatus, setBackendStatus] = useState('checking');
+
+  // Keep backend alive
+  useEffect(() => {
+    const pingBackend = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/health`);
+        if (res.ok) {
+          setBackendStatus('online');
+        } else {
+          setBackendStatus('offline');
+        }
+      } catch (err) {
+        setBackendStatus('offline');
+      }
+    };
+
+    // Ping immediately
+    pingBackend();
+
+    // Ping every 5 minutes to keep backend awake
+    const interval = setInterval(pingBackend, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -44,107 +69,81 @@ function App() {
   };
 
   if (!token) {
-    return <Login onLogin={handleLogin} apiUrl={API_URL} />;
+    return <Login onLogin={handleLogin} apiUrl={API_URL} backendStatus={backendStatus} />;
   }
 
+  const menuItems = [
+    { view: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { view: 'work-orders', label: 'Órdenes', icon: '📋' },
+    { view: 'schedule', label: 'Agenda', icon: '📅' },
+    { view: 'technicians', label: 'Técnicos', icon: '👷' },
+    { view: 'clients', label: 'Clientes', icon: '👥' },
+    { view: 'materials', label: 'Materiales', icon: '📦' }
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-blue-600 text-white shadow-lg">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
+      <header className="bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex justify-between items-center flex-wrap gap-4">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold">Sistema de Mantenimiento AC</h1>
+              <img src="/logo.png" alt="Ártico Logo" className="h-12 w-12 rounded-full bg-white p-1" />
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold">Sistema Ártico</h1>
+                <p className="text-xs text-red-100">Servicios Técnicos</p>
+              </div>
               {!isOnline && (
-                <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm">
-                  Modo Offline
+                <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs">
+                  Sin conexión
+                </span>
+              )}
+              {backendStatus === 'offline' && (
+                <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs animate-pulse">
+                  Servidor iniciando...
                 </span>
               )}
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm">
-                {user?.username} ({user?.role})
-              </span>
+              <div className="text-right">
+                <p className="text-sm font-medium">{user?.username}</p>
+                <p className="text-xs text-red-100">{user?.role === 'admin' ? 'Administrador' : 'Técnico'}</p>
+              </div>
               <button
                 onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded transition"
+                className="bg-white text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg transition font-medium"
               >
-                Cerrar Sesión
+                Salir
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         {/* Sidebar */}
-        <nav className="w-64 bg-white shadow-lg min-h-screen">
+        <nav className="w-full md:w-64 bg-white shadow-lg border-r border-gray-200">
           <ul className="py-4">
-            <li>
-              <button
-                onClick={() => setCurrentView('dashboard')}
-                className={`w-full text-left px-6 py-3 hover:bg-blue-50 transition ${
-                  currentView === 'dashboard' ? 'bg-blue-100 border-l-4 border-blue-600' : ''
-                }`}
-              >
-                📊 Dashboard
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => setCurrentView('work-orders')}
-                className={`w-full text-left px-6 py-3 hover:bg-blue-50 transition ${
-                  currentView === 'work-orders' ? 'bg-blue-100 border-l-4 border-blue-600' : ''
-                }`}
-              >
-                📋 Órdenes de Trabajo
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => setCurrentView('schedule')}
-                className={`w-full text-left px-6 py-3 hover:bg-blue-50 transition ${
-                  currentView === 'schedule' ? 'bg-blue-100 border-l-4 border-blue-600' : ''
-                }`}
-              >
-                📅 Agenda
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => setCurrentView('technicians')}
-                className={`w-full text-left px-6 py-3 hover:bg-blue-50 transition ${
-                  currentView === 'technicians' ? 'bg-blue-100 border-l-4 border-blue-600' : ''
-                }`}
-              >
-                👷 Técnicos
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => setCurrentView('clients')}
-                className={`w-full text-left px-6 py-3 hover:bg-blue-50 transition ${
-                  currentView === 'clients' ? 'bg-blue-100 border-l-4 border-blue-600' : ''
-                }`}
-              >
-                👥 Clientes
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => setCurrentView('materials')}
-                className={`w-full text-left px-6 py-3 hover:bg-blue-50 transition ${
-                  currentView === 'materials' ? 'bg-blue-100 border-l-4 border-blue-600' : ''
-                }`}
-              >
-                📦 Materiales
-              </button>
-            </li>
+            {menuItems.map(item => (
+              <li key={item.view}>
+                <button
+                  onClick={() => setCurrentView(item.view)}
+                  className={`w-full text-left px-6 py-3 hover:bg-red-50 transition flex items-center space-x-3 ${
+                    currentView === item.view 
+                      ? 'bg-red-50 border-l-4 border-red-600 text-red-600 font-medium' 
+                      : 'text-gray-700'
+                  }`}
+                >
+                  <span className="text-xl">{item.icon}</span>
+                  <span>{item.label}</span>
+                </button>
+              </li>
+            ))}
           </ul>
         </nav>
 
         {/* Main Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-4 md:p-6">
           {currentView === 'dashboard' && <Dashboard token={token} apiUrl={API_URL} />}
           {currentView === 'work-orders' && <WorkOrders token={token} apiUrl={API_URL} />}
           {currentView === 'schedule' && <Schedule token={token} apiUrl={API_URL} />}
@@ -153,6 +152,11 @@ function App() {
           {currentView === 'materials' && <Materials token={token} apiUrl={API_URL} />}
         </main>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 py-4 text-center text-sm text-gray-600">
+        <p>© 2025 Ártico Servicios Técnicos. Todos los derechos reservados.</p>
+      </footer>
     </div>
   );
 }
