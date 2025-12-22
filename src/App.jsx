@@ -16,7 +16,6 @@ function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [backendStatus, setBackendStatus] = useState('checking');
 
-  // Keep backend alive
   useEffect(() => {
     const pingBackend = async () => {
       try {
@@ -31,22 +30,16 @@ function App() {
       }
     };
 
-    // Ping immediately
     pingBackend();
-
-    // Ping every 5 minutes to keep backend awake
     const interval = setInterval(pingBackend, 5 * 60 * 1000);
-
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -83,35 +76,34 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex justify-between items-center flex-wrap gap-4">
-            <div className="flex items-center space-x-4">
-              <img src="/logo.png" alt="Ártico Logo" className="h-12 w-12 rounded-full bg-white p-1" />
+      {/* Header Mejorado */}
+      <header className="bg-gradient-to-r from-red-600 to-red-700 text-white shadow-xl sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <img 
+                src="/logo.png" 
+                alt="Ártico" 
+                className="h-10 w-10 object-contain bg-white rounded-full p-1" 
+              />
               <div>
-                <h1 className="text-xl md:text-2xl font-bold">Sistema Ártico</h1>
+                <h1 className="text-lg font-bold">Sistema Ártico</h1>
                 <p className="text-xs text-red-100">Servicios Técnicos</p>
               </div>
-              {!isOnline && (
-                <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs">
-                  Sin conexión
-                </span>
-              )}
               {backendStatus === 'offline' && (
-                <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs animate-pulse">
+                <span className="bg-orange-500 px-2 py-1 rounded text-xs animate-pulse">
                   Servidor iniciando...
                 </span>
               )}
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
+            <div className="flex items-center space-x-3">
+              <div className="hidden md:block text-right">
                 <p className="text-sm font-medium">{user?.username}</p>
-                <p className="text-xs text-red-100">{user?.role === 'admin' ? 'Administrador' : 'Técnico'}</p>
+                <p className="text-xs text-red-100">{user?.role === 'admin' ? 'Admin' : 'Técnico'}</p>
               </div>
               <button
                 onClick={handleLogout}
-                className="bg-white text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg transition font-medium"
+                className="bg-white text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg transition text-sm font-medium"
               >
                 Salir
               </button>
@@ -120,30 +112,47 @@ function App() {
         </div>
       </header>
 
-      <div className="flex flex-col md:flex-row">
-        {/* Sidebar */}
-        <nav className="w-full md:w-64 bg-white shadow-lg border-r border-gray-200">
-          <ul className="py-4">
+      <div className="flex">
+        {/* Sidebar Mejorado */}
+        <aside className="hidden md:block w-64 bg-white shadow-lg min-h-screen sticky top-16">
+          <nav className="py-4">
             {menuItems.map(item => (
-              <li key={item.view}>
-                <button
-                  onClick={() => setCurrentView(item.view)}
-                  className={`w-full text-left px-6 py-3 hover:bg-red-50 transition flex items-center space-x-3 ${
-                    currentView === item.view 
-                      ? 'bg-red-50 border-l-4 border-red-600 text-red-600 font-medium' 
-                      : 'text-gray-700'
-                  }`}
-                >
-                  <span className="text-xl">{item.icon}</span>
-                  <span>{item.label}</span>
-                </button>
-              </li>
+              <button
+                key={item.view}
+                onClick={() => setCurrentView(item.view)}
+                className={`w-full text-left px-6 py-3 flex items-center space-x-3 transition ${
+                  currentView === item.view 
+                    ? 'bg-red-50 border-l-4 border-red-600 text-red-600 font-semibold' 
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <span className="text-xl">{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
             ))}
-          </ul>
-        </nav>
+          </nav>
+        </aside>
+
+        {/* Mobile Menu */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-2xl border-t z-40">
+          <div className="flex justify-around py-2">
+            {menuItems.map(item => (
+              <button
+                key={item.view}
+                onClick={() => setCurrentView(item.view)}
+                className={`flex flex-col items-center px-3 py-2 ${
+                  currentView === item.view ? 'text-red-600' : 'text-gray-600'
+                }`}
+              >
+                <span className="text-2xl">{item.icon}</span>
+                <span className="text-xs mt-1">{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6">
+        <main className="flex-1 p-4 md:p-6 pb-20 md:pb-6 max-w-7xl">
           {currentView === 'dashboard' && <Dashboard token={token} apiUrl={API_URL} />}
           {currentView === 'work-orders' && <WorkOrders token={token} apiUrl={API_URL} />}
           {currentView === 'schedule' && <Schedule token={token} apiUrl={API_URL} />}
@@ -152,11 +161,6 @@ function App() {
           {currentView === 'materials' && <Materials token={token} apiUrl={API_URL} />}
         </main>
       </div>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-4 text-center text-sm text-gray-600">
-        <p>© 2025 Ártico Servicios Técnicos. Todos los derechos reservados.</p>
-      </footer>
     </div>
   );
 }

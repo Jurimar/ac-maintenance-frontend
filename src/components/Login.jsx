@@ -27,7 +27,7 @@ export default function Login({ onLogin, apiUrl, backendStatus }) {
       onLogin(data.token, data.user);
     } catch (err) {
       if (err.message.includes('Failed to fetch')) {
-        setError('El servidor está iniciando. Por favor espera 30 segundos e intenta nuevamente.');
+        setError('El servidor está iniciando. Espera 30 segundos e intenta de nuevo.');
       } else {
         setError(err.message);
       }
@@ -37,32 +37,38 @@ export default function Login({ onLogin, apiUrl, backendStatus }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-600 via-red-700 to-red-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-        <div className="text-center mb-8">
+        {/* Logo */}
+        <div className="text-center mb-6">
           <div className="flex justify-center mb-4">
-            <div className="bg-red-600 p-4 rounded-full">
-              <img src="/logo.png" alt="Ártico Logo" className="h-20 w-20" />
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="Ártico" 
+              className="h-24 w-24 object-contain"
+            />
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Sistema Ártico</h1>
-          <p className="text-gray-600">Servicios Técnicos Profesionales</p>
+          <h1 className="text-2xl font-bold text-gray-800">Sistema Ártico</h1>
+          <p className="text-sm text-gray-600">Servicios Técnicos Profesionales</p>
         </div>
 
+        {/* Backend Status */}
         {backendStatus === 'offline' && (
-          <div className="bg-orange-50 border border-orange-200 text-orange-800 px-4 py-3 rounded-lg mb-4 text-sm">
-            ⏳ El servidor está iniciando. Esto toma ~30 segundos la primera vez.
+          <div className="bg-orange-50 border-l-4 border-orange-500 text-orange-700 px-4 py-3 rounded mb-4 text-sm">
+            <p className="font-medium">⏳ Servidor iniciando...</p>
+            <p className="text-xs mt-1">Esto toma ~30 segundos en el primer acceso.</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Usuario</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
               placeholder="admin"
               required
               disabled={loading || backendStatus === 'offline'}
@@ -70,12 +76,12 @@ export default function Login({ onLogin, apiUrl, backendStatus }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
               placeholder="••••••••"
               required
               disabled={loading || backendStatus === 'offline'}
@@ -83,7 +89,7 @@ export default function Login({ onLogin, apiUrl, backendStatus }) {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded text-sm">
               {error}
             </div>
           )}
@@ -91,26 +97,19 @@ export default function Login({ onLogin, apiUrl, backendStatus }) {
           <button
             type="submit"
             disabled={loading || backendStatus === 'offline'}
-            className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            {loading ? 'Iniciando...' : 'Iniciar Sesión'}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-xs text-gray-600 mb-2">Credenciales de prueba:</p>
-            <div className="font-mono text-sm">
-              <p className="text-gray-800">Usuario: <span className="font-bold">admin</span></p>
-              <p className="text-gray-800">Contraseña: <span className="font-bold">admin</span></p>
-            </div>
+        {/* Credentials */}
+        <div className="mt-6 bg-gray-50 rounded-lg p-4 text-center">
+          <p className="text-xs text-gray-600 mb-2">Credenciales por defecto:</p>
+          <div className="text-sm space-y-1">
+            <p><span className="font-semibold">Usuario:</span> admin</p>
+            <p><span className="font-semibold">Contraseña:</span> admin</p>
           </div>
-        </div>
-
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500">
-            Sistema de gestión de mantenimiento v1.0
-          </p>
         </div>
       </div>
     </div>
